@@ -1,5 +1,23 @@
 import {defer, isXml, parse} from "./core";
 import Path from "./path";
+import aesjs from 'aes-js';
+
+//fixme: just test
+function decrypt(encryptedBytes){		
+	encryptedBytes = new Uint8Array(encryptedBytes);
+	var key = [ 0, 0, 0, 0, 
+		0, 0, 0, 0, 
+		0, 0, 0, 0, 
+		0, 0, 0, 0 ];
+
+	var iv = key;
+	var aesCbc = new aesjs.ModeOfOperation.cbc(key, iv);
+	var decryptedBytes = aesCbc.decrypt(encryptedBytes);
+	let xxx = aesjs.utils.utf8.fromBytes(decryptedBytes).replace(/(?<=\<\/html\>)(\s|\S)*$/,"");
+	
+	console.log('decryptedBytes',xxx);
+	return xxx
+}
 
 function request(url, type, withCredentials, headers) {
 	var supportsURL = (typeof window != "undefined") ? window.URL : false; // TODO: fallback for url if window isn't defined
@@ -56,10 +74,12 @@ function request(url, type, withCredentials, headers) {
 
 	if(type == "xhtml") {
 		// xhr.responseType = "document";
+		xhr.responseType = "arraybuffer";
 	}
 
 	if(type == "html" || type == "htm") {
 		// xhr.responseType = "document";
+		xhr.responseType = "arraybuffer";
 	}
 
 	if(type == "binary") {
@@ -71,6 +91,8 @@ function request(url, type, withCredentials, headers) {
 	function err(e) {
 		deferred.reject(e);
 	}
+
+
 
 	function handler() {
 		if (this.readyState === XMLHttpRequest.DONE) {
@@ -109,11 +131,11 @@ function request(url, type, withCredentials, headers) {
 					// If this.responseXML wasn't set, try to parse using a DOMParser from text
 					r = parse(this.response, "text/xml");
 				}else
-				if(type == "xhtml"){
-					r = parse(this.response, "application/xhtml+xml");
+				if(type == "xhtml"){					
+					r = parse(decrypt(this.response), "application/xhtml+xml");
 				}else
 				if(type == "html" || type == "htm"){
-					r = parse(this.response, "text/html");
+					r = parse(decrypt(this.response), "text/html");
 				}else
 				if(type == "json"){
 					r = JSON.parse(this.response);
