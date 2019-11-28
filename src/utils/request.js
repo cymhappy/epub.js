@@ -13,7 +13,8 @@ function decrypt(encryptedBytes){
 	var iv = key;
 	var aesCbc = new aesjs.ModeOfOperation.cbc(key, iv);
 	var decryptedBytes = aesCbc.decrypt(encryptedBytes);
-	let xxx = aesjs.utils.utf8.fromBytes(decryptedBytes).replace(/(?<=\<\/html\>)(\s|\S)*$/,"");
+	// let xxx = aesjs.utils.utf8.fromBytes(decryptedBytes).replace(/(?<=\<\/html\>)(\s|\S)*$/,"");
+	var xxx = _aesJs2.default.utils.utf8.fromBytes(decryptedBytes).replace(/(\<\/html\>)(\s|\S){1,20}$/, "</html>");
 	
 	console.log('decryptedBytes',xxx);
 	return xxx
